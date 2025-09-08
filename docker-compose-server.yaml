@@ -5,14 +5,14 @@ services:
     image: xuananhdocker/crawler-app
     container_name: crawler
     env_file:
-      - ./configs/.env.crawler
+      - ./crawler/.env.container
     networks:
       - crawler
   consumer:
     image: xuananhdocker/consumer-app
     container_name: consumer
     env_file:
-      - ./configs/.env.consumer
+      - ./consumer/.env.container
     networks:
       - crawler
   website:
@@ -26,7 +26,7 @@ services:
     image: xuananhdocker/crawler-api
     container_name: api
     env_file:
-      - ./configs/.env.api
+      - ./api/.env.container
     ports:
       - "3000:3000"
     networks:
