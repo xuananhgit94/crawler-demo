@@ -10,37 +10,30 @@ data "cloudinit_config" "config" {
   }
 }
 
+# Lấy Ubuntu 22.04 LTS
 data "aws_ami" "ubuntu" {
   most_recent = true
-
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
   }
-
-  owners = ["099720109477"]
+  owners = ["099720109477"] # Canonical
 }
 
 resource "aws_instance" "crawler" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t3.medium"
-  key_name      = "test"
-
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = "t3.medium"
+  key_name                    = "test"
   # /var/log/cloud-init-output.log
-  user_data     = data.cloudinit_config.config.rendered
-
-  vpc_security_group_ids = [
-    aws_security_group.crawler.id
-  ]
+  user_data_base64            = data.cloudinit_config.config.rendered
+  vpc_security_group_ids      = [aws_security_group.crawler.id]
 
   root_block_device {
     volume_size = 30
   }
 
   lifecycle {
-    ignore_changes = [
-      ami
-    ]
+    ignore_changes = [ami]
   }
 
   tags = {
