@@ -10,6 +10,16 @@ data "cloudinit_config" "config" {
   }
 }
 
+data "cloudinit_config" "config_runner" {
+  gzip          = true
+  base64_encode = true
+
+  part {
+    content_type = "text/cloud-config"
+    content      = templatefile("${path.module}/cloud_config_runner.yaml", {})
+  }
+}
+
 # Lấy Ubuntu 22.04 LTS
 data "aws_ami" "ubuntu" {
   most_recent = true
@@ -41,6 +51,31 @@ resource "aws_instance" "crawler" {
   }
 }
 
+resource "aws_instance" "runner" {
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = "t3.medium"
+  key_name                    = "test"
+  # /var/log/cloud-init-output.log
+  user_data_base64            = data.cloudinit_config.config_runner.rendered
+  vpc_security_group_ids      = [aws_security_group.runner.id]
+
+  root_block_device {
+    volume_size = 30
+  }
+
+  lifecycle {
+    ignore_changes = [ami]
+  }
+
+  tags = {
+    Name = "Runner"
+  }
+}
+
 output "ec2" {
   value = aws_instance.crawler.public_ip
+}
+
+output "runner" {
+  value = aws_instance.runner.public_ip
 }

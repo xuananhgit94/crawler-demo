@@ -1,0 +1,20 @@
+#cloud-config-runner
+package_update: true
+packages:
+  - git
+  - curl
+
+write_files:
+  - path: /usr/local/bin/setup_crawler.sh
+    owner: root:root
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      set -euo pipefail
+      exec > /var/log/setup_crawler.log 2>&1
+      echo "[INFO] Installing Docker..."
+      curl -fsSL https://get.docker.com/ | sh
+      echo "[INFO] Cloning repository..."
+      sudo usermod -aG docker ubuntu
+runcmd:
+  - [ bash, -c, "/usr/local/bin/setup_crawler.sh || true" ]
